@@ -1,0 +1,156 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+model User {
+  id        String   @id @default(uuid())
+  name      String
+  email     String   @unique
+  password  String
+  role      Role     @default(BASIC)
+  // employees Employee[]
+  // customer Customer[]
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+
+enum Role {
+  BASIC //usuario base  cualquier cliente
+  EMPLOYEE // empleado de alguna sección
+  ACOUNTING // contabilidad acceso a datos relacionados con cuentas
+  STORAGE //   bodega  accesos a temas relacionados con bodega
+  ADMIN //   administrador
+}
+
+model Invoice {
+  id              String   @id @default(uuid())
+  serial          String   @unique
+  userId          String?  @unique
+  date            String
+  customerName    String
+  customerId      String   @unique
+  description     String
+  tax             String?
+  value           String
+  total           Float
+  active          Boolean
+  blNumber        String?  @unique
+  containerNumber String?
+  updatedAt       DateTime @updatedAt
+  createdAt       DateTime @default(now())
+}
+
+model Shipping {
+  id              String   @id @default(uuid())
+  name            String
+  userId          String?  @unique
+  blNumber        String   @unique
+  date            String
+  description     String
+  dimensions      String?
+  volume          String?
+  containerNumber String
+  comments        String?
+  active          Boolean
+  updatedAt       DateTime @updatedAt
+  createdAt       DateTime @default(now())
+}
+
+model Entry {
+  id                String      @id @default(uuid())
+  userId            String?     @unique
+  name              String
+  date              String
+  sealNumber        String      @unique
+  blNumber          String?     @unique
+  dimensions        String
+  comments          String?
+  active            Boolean
+  entryNumber       Int         //numero que aumenta en cada entry
+  updatedAt         DateTime    @updatedAt
+  createdAt         DateTime    @default(now())
+  containers        Container[] // Relación one-to-many con Container
+}
+
+model Container {
+  id            String    @id @default(uuid())
+  ruc           String    @unique
+  name          String
+  active        Boolean   @default(true)
+  wareHouseName String
+  description   String
+  blNumber      String    @unique
+  idEntry       String
+  entry         Entry     @relation(fields: [idEntry], references: [id])
+  products      Product[] // Relación one-to-many con Product
+  updatedAt     DateTime  @updatedAt
+  createdAt     DateTime  @default(now())
+}
+
+model Product {
+  id           String    @id @default(uuid())
+  name         String
+  observations String?
+  quantity     Int
+  createdAt    DateTime  @default(now())
+  updatedAt    DateTime  @updatedAt
+  containerId  String
+  container    Container @relation(fields: [containerId], references: [id])
+}
+
+// model Employee {
+//   dni      String   @id 
+//   name     String
+//   phone    String   @unique
+//   email    String   @unique
+//   country  String
+//   salary   Float 
+//   user   User @relation(fields: [userId], references: [id])
+//   userId String
+//   createdAt      DateTime       @default(now())
+//   updatedAt      DateTime       @updatedAt
+// }
+
+// model Customer {
+//   dni      String   @id 
+//   dniType  String 
+//   name     String
+//   email    String   @unique
+//   phone    String   @db.VarChar(20)
+//   country  String   
+//   products     Product[]    
+//   user   User @relation(fields: [userId], references: [id])
+//   userId String
+//   createdAt      DateTime       @default(now())
+//   updatedAt      DateTime       @updatedAt
+// }
+
+// model Product {
+//   id       String   @id @default(uuid()) 
+//   name     String
+//   email    String   @unique
+//   phone    String   @db.VarChar(20)   
+//   customer Customer @relation(fields: [customerId], references: [dni])
+//   customerId  String
+//   warehouse   Warehouse @relation(fields: [warehouseId], references: [id])
+//   warehouseId String
+//   createdAt      DateTime       @default(now())
+//   updatedAt      DateTime       @updatedAt
+// }
+
+// model Warehouse {
+//   id       String   @id @default(uuid()) 
+//   name     String
+//   description String
+//   products Product[]
+//   createdAt      DateTime       @default(now())
+//   updatedAt      DateTime       @updatedAt
+// }
